@@ -1,8 +1,10 @@
+
 import { useState } from "react";
 import LicenseValidation from "@/components/LicenseValidation";
 import FileUpload from "@/components/FileUpload";
 import ProcessingView from "@/components/ProcessingView";
 import ResultsModal from "@/components/ResultsModal";
+
 const Index = () => {
   const [isValidatingLicense, setIsValidatingLicense] = useState(true);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -14,9 +16,11 @@ const Index = () => {
   setTimeout(() => {
     setIsValidatingLicense(false);
   }, 2000);
+
   const handleFileSelect = (file: File) => {
     setSelectedFile(file);
   };
+
   const handleStartProcess = () => {
     setIsProcessing(true);
     // Simulando proceso
@@ -31,9 +35,11 @@ const Index = () => {
       }
     }, 50);
   };
+
   if (isValidatingLicense) {
     return <LicenseValidation />;
   }
+
   return <div className="min-h-screen bg-gradient-soft bg-sky-400 hover:bg-sky-300">
       <div className="container mx-auto px-4 py-12">
         <div className="max-w-4xl mx-auto">
@@ -59,4 +65,5 @@ const Index = () => {
     }} />}
     </div>;
 };
+
 export default Index;
