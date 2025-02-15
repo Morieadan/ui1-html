@@ -1,14 +1,15 @@
 
-import { FileText, Upload } from "lucide-react";
+import { FileText, Upload, Database } from "lucide-react";
 import { useState } from "react";
+
 interface FileUploadProps {
   onFileSelect: (file: File) => void;
 }
-const FileUpload = ({
-  onFileSelect
-}: FileUploadProps) => {
+
+const FileUpload = ({ onFileSelect }: FileUploadProps) => {
   const [dragActive, setDragActive] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+
   const handleDrag = (e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -18,6 +19,7 @@ const FileUpload = ({
       setDragActive(false);
     }
   };
+
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -30,6 +32,7 @@ const FileUpload = ({
       }
     }
   };
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     e.preventDefault();
     if (e.target.files && e.target.files[0]) {
@@ -38,21 +41,54 @@ const FileUpload = ({
       onFileSelect(file);
     }
   };
-  return <div className="w-full max-w-xl mx-auto">
-      <div className={`relative border-2 border-dashed rounded-xl p-8 transition-all ${dragActive ? "border-primary bg-primary/5" : "border-gray-300 hover:border-primary/50"}`} onDragEnter={handleDrag} onDragLeave={handleDrag} onDragOver={handleDrag} onDrop={handleDrop}>
-        <input type="file" accept=".xlsx,.xls" onChange={handleChange} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer bg-purple-500 hover:bg-purple-400 rounded-2xl" />
-        <div className="text-center">
-          {selectedFile ? <div className="space-y-2 animate-fade-in">
-              <FileText className="w-12 h-12 mx-auto text-primary" />
-              <p className="text-sm text-gray-500">{selectedFile.name}</p>
-            </div> : <div className="space-y-2">
-              <Upload className="w-12 h-12 mx-auto text-gray-400" />
-              <p className="text-gray-500">
-                Arrastra un archivo Excel o haz clic para seleccionar
-              </p>
-            </div>}
+
+  return (
+    <div className="w-full max-w-2xl mx-auto">
+      <div
+        className={`relative overflow-hidden backdrop-blur-xl bg-black/20 rounded-2xl border transition-all duration-300 ${
+          dragActive
+            ? "border-primary/50 shadow-[0_0_30px_-12px_rgba(155,135,245,0.5)]"
+            : "border-white/10 hover:border-primary/30"
+        }`}
+        onDragEnter={handleDrag}
+        onDragLeave={handleDrag}
+        onDragOver={handleDrag}
+        onDrop={handleDrop}
+      >
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-accent/5" />
+        <input
+          type="file"
+          accept=".xlsx,.xls"
+          onChange={handleChange}
+          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+        />
+        <div className="relative p-8">
+          <div className="text-center">
+            {selectedFile ? (
+              <div className="space-y-4 animate-fade-in">
+                <div className="w-16 h-16 mx-auto rounded-2xl bg-primary/10 flex items-center justify-center border border-primary/20">
+                  <Database className="w-8 h-8 text-primary" />
+                </div>
+                <div className="space-y-1">
+                  <p className="text-white/90 font-medium">{selectedFile.name}</p>
+                  <p className="text-xs text-white/50">Archivo seleccionado</p>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div className="w-16 h-16 mx-auto rounded-2xl bg-white/5 flex items-center justify-center border border-white/10">
+                  <Upload className="w-8 h-8 text-white/50" />
+                </div>
+                <p className="text-white/70">
+                  Arrastra un archivo Excel o haz clic para seleccionar
+                </p>
+              </div>
+            )}
+          </div>
         </div>
       </div>
-    </div>;
+    </div>
+  );
 };
+
 export default FileUpload;
