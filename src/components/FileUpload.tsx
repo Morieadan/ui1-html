@@ -42,6 +42,12 @@ const FileUpload = ({ onFileSelect }: FileUploadProps) => {
     }
   };
 
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+  const handleIconClick = () => {
+    fileInputRef.current?.click();
+  };
+
   return (
     <div className="w-full max-w-2xl mx-auto">
       <div
@@ -57,10 +63,11 @@ const FileUpload = ({ onFileSelect }: FileUploadProps) => {
       >
         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-accent/5" />
         <input
+          ref={fileInputRef}
           type="file"
           accept=".xlsx,.xls"
           onChange={handleChange}
-          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+          className="hidden"
         />
         <div className="relative p-8">
           <div className="text-center">
@@ -76,7 +83,10 @@ const FileUpload = ({ onFileSelect }: FileUploadProps) => {
               </div>
             ) : (
               <div className="space-y-4">
-                <div className="w-16 h-16 mx-auto rounded-2xl bg-white/5 flex items-center justify-center border border-white/10">
+                <div 
+                  onClick={handleIconClick}
+                  className="w-16 h-16 mx-auto rounded-2xl bg-white/5 flex items-center justify-center border border-white/10 cursor-pointer hover:bg-white/10 hover:border-primary/30 transition-all duration-300"
+                >
                   <Upload className="w-8 h-8 text-white/50" />
                 </div>
                 <p className="text-white/70">
