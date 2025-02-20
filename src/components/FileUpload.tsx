@@ -1,6 +1,6 @@
 
+import React, { useState, useRef } from "react";
 import { FileText, Upload, Database } from "lucide-react";
-import { useState } from "react";
 
 interface FileUploadProps {
   onFileSelect: (file: File) => void;
@@ -9,6 +9,7 @@ interface FileUploadProps {
 const FileUpload = ({ onFileSelect }: FileUploadProps) => {
   const [dragActive, setDragActive] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleDrag = (e: React.DragEvent) => {
     e.preventDefault();
@@ -41,8 +42,6 @@ const FileUpload = ({ onFileSelect }: FileUploadProps) => {
       onFileSelect(file);
     }
   };
-
-  const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   const handleIconClick = () => {
     fileInputRef.current?.click();
