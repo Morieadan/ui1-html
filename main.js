@@ -1,6 +1,7 @@
 
+// Inicialización de la aplicación Electron
 document.addEventListener('DOMContentLoaded', () => {
-    // Referencias a elementos DOM
+    // Referencias a elementos de la UI
     const licenseValidation = document.getElementById('licenseValidation');
     const mainScreen = document.getElementById('mainScreen');
     const processingView = document.getElementById('processingView');
@@ -13,13 +14,19 @@ document.addEventListener('DOMContentLoaded', () => {
     const progressPercentage = document.getElementById('progressPercentage');
     const currentFile = document.getElementById('currentFile');
 
-    // Simular validación de licencia
+    /**
+     * FASE 1: Validación de Licencia
+     * Esta fase simula la verificación de la licencia del sistema
+     */
     setTimeout(() => {
         licenseValidation.classList.add('hidden');
         mainScreen.classList.remove('hidden');
     }, 2000);
 
-    // Manejo de eventos de drag and drop
+    /**
+     * FASE 2: Selección de Archivo Excel
+     * Manejo de eventos para la selección de archivo mediante drag & drop o click
+     */
     ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
         uploadContainer.addEventListener(eventName, preventDefaults, false);
         document.body.addEventListener(eventName, preventDefaults, false);
@@ -30,6 +37,7 @@ document.addEventListener('DOMContentLoaded', () => {
         e.stopPropagation();
     }
 
+    // Efectos visuales para el drag & drop
     ['dragenter', 'dragover'].forEach(eventName => {
         uploadContainer.addEventListener(eventName, highlight, false);
     });
@@ -46,7 +54,7 @@ document.addEventListener('DOMContentLoaded', () => {
         uploadContainer.classList.remove('drag-active');
     }
 
-    // Manejo de la selección de archivo
+    // Eventos de selección de archivo
     uploadContainer.addEventListener('click', () => {
         fileInput.click();
     });
@@ -71,6 +79,7 @@ document.addEventListener('DOMContentLoaded', () => {
         unhighlight();
     }
 
+    // Validación de archivo Excel
     function isValidExcelFile(file) {
         return file.type.includes('excel') || 
                file.type.includes('spreadsheet') || 
@@ -78,6 +87,7 @@ document.addEventListener('DOMContentLoaded', () => {
                file.name.endsWith('.xls');
     }
 
+    // Actualización visual del contenedor de archivo
     function updateUploadContainer(file) {
         const uploadContent = uploadContainer.querySelector('.upload-content');
         uploadContent.innerHTML = `
@@ -93,7 +103,10 @@ document.addEventListener('DOMContentLoaded', () => {
         `;
     }
 
-    // Proceso de inicio
+    /**
+     * FASE 3: Proceso de Scraping
+     * Manejo del proceso de scraping y actualización de la UI
+     */
     startButton.addEventListener('click', () => {
         mainScreen.classList.add('hidden');
         processingView.classList.remove('hidden');
@@ -116,12 +129,16 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 50);
     }
 
+    /**
+     * FASE 4: Resultados
+     * Visualización y manejo de los resultados del scraping
+     */
     function showResults() {
         processingView.classList.add('hidden');
         resultsModal.classList.remove('hidden');
     }
 
-    // Cerrar resultados
+    // Evento para cerrar resultados y reiniciar proceso
     closeResults.addEventListener('click', () => {
         resultsModal.classList.add('hidden');
         mainScreen.classList.remove('hidden');
