@@ -1,5 +1,5 @@
 
-// Elementos del DOM
+// DOM Elements
 const selectFileBtn = document.getElementById('selectFileBtn');
 const startProcessBtn = document.getElementById('startProcessBtn');
 const noFileSelected = document.getElementById('noFileSelected');
@@ -17,33 +17,13 @@ const processingTime = document.getElementById('processingTime');
 const resultsSummary = document.getElementById('resultsSummary');
 const licenseValidation = document.getElementById('licenseValidation');
 
-// Variable para almacenar la referencia al archivo
+// State variables
 let selectedFile = null;
 let startTime = null;
+let mockContactsTotal = 583; // Mock data for demo purposes
+let mockFilteredTotal = 397; // Mock data for demo purposes
 
-// Evento para simular la selección de archivo (en una app real, esto usaría APIs de Electron)
-selectFileBtn.addEventListener('click', () => {
-    // Simula un diálogo de archivo después de un breve retraso
-    setTimeout(() => {
-        // Crea un archivo simulado
-        selectedFile = {
-            name: "contactos_ejemplo.xlsx",
-            size: 1024 * 1024 * 2.3, // 2.3 MB
-            type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-        };
-        
-        // Actualiza la interfaz para mostrar el archivo seleccionado
-        noFileSelected.classList.add('hidden');
-        fileInfo.classList.remove('hidden');
-        fileName.textContent = selectedFile.name;
-        fileSize.textContent = formatBytes(selectedFile.size);
-        
-        // Habilita el botón de inicio
-        startProcessBtn.disabled = false;
-    }, 500);
-});
-
-// Función para formatear bytes a una forma legible
+// Utility functions
 function formatBytes(bytes, decimals = 2) {
     if (bytes === 0) return '0 Bytes';
     
@@ -56,115 +36,250 @@ function formatBytes(bytes, decimals = 2) {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
 }
 
-// Evento para iniciar el procesamiento
+function showToast(message, type = 'info') {
+    // Simple toast notification implementation
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type}`;
+    toast.textContent = message;
+    document.body.appendChild(toast);
+    
+    // Add visible class to trigger animation
+    setTimeout(() => toast.classList.add('visible'), 10);
+    
+    // Remove toast after 3 seconds
+    setTimeout(() => {
+        toast.classList.remove('visible');
+        setTimeout(() => toast.remove(), 300);
+    }, 3000);
+}
+
+// Event Listeners
+selectFileBtn.addEventListener('click', () => {
+    // Add loading state to button
+    selectFileBtn.classList.add('loading');
+    selectFileBtn.textContent = 'Selecting...';
+    
+    // Simulate a file selection dialog delay
+    setTimeout(() => {
+        // Create a mock file object
+        selectedFile = {
+            name: "contacts_example.xlsx",
+            size: 1024 * 1024 * 2.3, // 2.3 MB
+            type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        };
+        
+        // Update UI with file info
+        noFileSelected.classList.add('hidden');
+        fileInfo.classList.remove('hidden');
+        fileName.textContent = selectedFile.name;
+        fileSize.textContent = formatBytes(selectedFile.size);
+        
+        // Enable the start process button
+        startProcessBtn.disabled = false;
+        
+        // Reset button state
+        selectFileBtn.classList.remove('loading');
+        selectFileBtn.textContent = 'Select File';
+        
+        // Show success toast
+        showToast('File selected successfully', 'success');
+    }, 800);
+});
+
 startProcessBtn.addEventListener('click', () => {
     if (!selectedFile) return;
 
-    // Muestra la validación de licencia primero
+    // Show license validation screen
+    document.querySelector('.screen').classList.add('hidden');
     licenseValidation.classList.remove('hidden');
     
-    // Simula la validación de licencia
+    // Simulate license validation
     setTimeout(() => {
+        // Hide license validation and show main app again
         licenseValidation.classList.add('hidden');
+        document.querySelector('.screen').classList.remove('hidden');
         
-        // Comienza el procesamiento
+        // Start processing
         startProcessing();
+        
+        // Show info toast
+        showToast('Processing started', 'info');
     }, 2000);
 });
 
-// Función para iniciar el procesamiento
+closeModalBtn.addEventListener('click', () => {
+    // Hide the modal with animation
+    resultsModal.classList.remove('visible');
+    setTimeout(() => {
+        resultsModal.classList.add('hidden');
+    }, 300);
+    
+    // Show completed toast
+    showToast('Process completed successfully', 'success');
+});
+
+// Processing functions
 function startProcessing() {
-    // Reinicia valores previos
+    // Clear previous results
     resultsSummary.innerHTML = '';
     
-    // Muestra la sección de procesamiento
+    // Show processing section with animation
     processingSection.classList.remove('hidden');
+    setTimeout(() => processingSection.classList.add('visible'), 10);
     
-    // Deshabilita los botones durante el procesamiento
+    // Disable buttons during processing
     selectFileBtn.disabled = true;
     startProcessBtn.disabled = true;
     
-    // Registra el tiempo de inicio
+    // Record start time
     startTime = performance.now();
     
-    // Simula un procesamiento progresivo
+    // Simulate progressive processing
     let progress = 0;
     const interval = setInterval(() => {
-        progress += Math.random() * 5;
+        // Increase progress with some randomness for realism
+        progress += (Math.random() * 3) + 0.5;
+        
         if (progress >= 100) {
             progress = 100;
             clearInterval(interval);
             
-            // Finaliza el procesamiento
-            processingComplete();
+            // Complete the processing
+            setTimeout(() => {
+                finishProcessing();
+            }, 500);
         }
         
-        // Actualiza la barra de progreso
+        // Update progress UI
         updateProgress(progress);
         
-        // Actualiza resultados en tiempo real
-        const contactsProcessed = Math.floor((progress / 100) * 583);
+        // Update real-time results
+        const contactsProcessed = Math.floor((progress / 100) * mockContactsTotal);
         const filteredContacts = Math.floor(contactsProcessed * 0.68);
         updateRealtimeResults(contactsProcessed, filteredContacts);
     }, 200);
 }
 
-// Función para actualizar la barra de progreso
 function updateProgress(value) {
     const percent = Math.round(value);
     progressFill.style.width = `${percent}%`;
     progressPercentage.textContent = `${percent}%`;
 }
 
-// Función para actualizar resultados en tiempo real
 function updateRealtimeResults(contacts, filtered) {
-    // Actualiza el panel de resultados en tiempo real
+    // Update the results panel in real-time
     resultsSummary.innerHTML = `
-        <p>Contactos procesados: <strong>${contacts}</strong></p>
-        <p>Contactos filtrados: <strong>${filtered}</strong></p>
+        <p>Processed contacts: <strong>${contacts}</strong></p>
+        <p>Filtered contacts: <strong>${filtered}</strong></p>
     `;
 }
 
-// Función para manejar la finalización del procesamiento
-function processingComplete() {
-    // Calcula el tiempo transcurrido
+function finishProcessing() {
+    // Calculate elapsed time
     const elapsedTime = ((performance.now() - startTime) / 1000).toFixed(1);
     
-    // Actualiza estadísticas en el modal
-    totalContacts.textContent = '583';
-    totalFiltered.textContent = '397';
+    // Update stats in the modal
+    totalContacts.textContent = mockContactsTotal.toString();
+    totalFiltered.textContent = mockFilteredTotal.toString();
     processingTime.textContent = `${elapsedTime}s`;
     
-    // Oculta sección de procesamiento
-    processingSection.classList.add('hidden');
+    // Hide processing section with animation
+    processingSection.classList.remove('visible');
+    setTimeout(() => {
+        processingSection.classList.add('hidden');
+        
+        // Show the results modal with animation
+        resultsModal.classList.remove('hidden');
+        setTimeout(() => resultsModal.classList.add('visible'), 10);
+    }, 300);
     
-    // Muestra el modal con los resultados
-    resultsModal.classList.remove('hidden');
-    
-    // Añade resultados más detallados
+    // Add detailed results
     resultsSummary.innerHTML = `
-        <p>Se procesaron <strong class="highlight">583</strong> contactos en total.</p>
-        <p>Se filtraron <strong class="highlight">397</strong> contactos únicos.</p>
-        <p>Tiempo de procesamiento: <strong>${elapsedTime}s</strong></p>
-        <p>El archivo de resultados se guardó en <strong>C:/Datos/resultados.xlsx</strong></p>
+        <p>Processed <strong class="highlight">${mockContactsTotal}</strong> contacts in total.</p>
+        <p>Filtered <strong class="highlight">${mockFilteredTotal}</strong> unique contacts.</p>
+        <p>Processing time: <strong>${elapsedTime}s</strong></p>
+        <p>Results file saved to <strong>C:/Data/results.xlsx</strong></p>
     `;
     
-    // Reestablece los botones
+    // Reset buttons
     selectFileBtn.disabled = false;
     startProcessBtn.disabled = false;
 }
 
-// Evento para cerrar el modal
-closeModalBtn.addEventListener('click', () => {
-    resultsModal.classList.add('hidden');
-});
-
-// Validación de licencia simulada al inicio
+// Initial license validation on app start
 document.addEventListener('DOMContentLoaded', () => {
-    licenseValidation.classList.remove('hidden');
+    // Add styles for toast notifications
+    const style = document.createElement('style');
+    style.textContent = `
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            min-width: 200px;
+            padding: 15px 20px;
+            border-radius: 10px;
+            background: var(--surface);
+            color: var(--text-primary);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+            transform: translateY(30px);
+            opacity: 0;
+            transition: transform 0.3s ease, opacity 0.3s ease;
+            border-left: 4px solid var(--primary);
+        }
+        
+        .toast.visible {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        
+        .toast-success {
+            border-left-color: var(--success);
+        }
+        
+        .toast-error {
+            border-left-color: var(--danger);
+        }
+        
+        .toast-info {
+            border-left-color: var(--primary);
+        }
+        
+        .toast-warning {
+            border-left-color: var(--warning);
+        }
+        
+        .action-button.loading {
+            position: relative;
+            pointer-events: none;
+        }
+        
+        .action-button.loading::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 15px;
+            width: 12px;
+            height: 12px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            transform: translateY(-50%);
+        }
+        
+        .processing-info.visible {
+            animation: fadeIn 0.3s ease;
+        }
+    `;
     
-    // Simula la validación inicial
+    document.head.appendChild(style);
+
+    // Show main screen initially
+    document.querySelector('.screen').classList.remove('hidden');
+    
+    // Simulate initial validation
     setTimeout(() => {
-        licenseValidation.classList.add('hidden');
-    }, 1500);
+        showToast('Application ready', 'success');
+    }, 1000);
 });
