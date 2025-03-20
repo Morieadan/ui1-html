@@ -1,11 +1,11 @@
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Data Scraper Pro</title>
+    <title>IKE Expedientes Automation</title>
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/styles.css">
   </head>
@@ -30,7 +30,7 @@
             <div class="radar-blip blip2"></div>
           </div>
           
-          <h2><span>VALIDATING</span> LICENSE</h2>
+          <h2><span>VALIDANDO</span> LICENCIA</h2>
           
           <div class="progress-scan">
             <div class="scan-line"></div>
@@ -38,11 +38,11 @@
           
           <div class="tech-stats">
             <div class="stat-item">
-              <div class="stat-label">STATUS</div>
-              <div class="stat-value">SCANNING</div>
+              <div class="stat-label">ESTADO</div>
+              <div class="stat-value">ESCANEANDO</div>
             </div>
             <div class="stat-item">
-              <div class="stat-label">PROGRESS</div>
+              <div class="stat-label">PROGRESO</div>
               <div class="stat-value loading-dots">
                 <span class="dot"></span>
                 <span class="dot"></span>
@@ -63,7 +63,7 @@
               <div class="traffic-light yellow"></div>
               <div class="traffic-light green"></div>
             </div>
-            <div class="window-title">DATA SCRAPER PRO</div>
+            <div class="window-title">IKE EXPEDIENTES AUTOMATION</div>
             <div class="window-controls">
               <div class="window-time" id="currentTime">00:00:00</div>
             </div>
@@ -86,7 +86,7 @@
                 <div class="circuit-line"></div>
                 <div class="circuit-line"></div>
               </div>
-              <h1>Data Scraper <span class="version">v2.0</span></h1>
+              <h1>IKE Expedientes <span class="version">v1.0</span></h1>
               <div class="circuit-lines">
                 <div class="circuit-line"></div>
                 <div class="circuit-line"></div>
@@ -97,7 +97,7 @@
             <!-- File Selection Section -->
             <div class="module-section file-section">
               <div class="module-header">
-                <h2>SELECT FILE</h2>
+                <h2>ARCHIVO DE EXPEDIENTES</h2>
                 <div class="module-indicator"></div>
               </div>
               
@@ -127,17 +127,17 @@
                 
                 <div class="actions">
                   <button class="tech-button primary" id="selectFileBtn">
-                    <span class="button-text">SELECT FILE</span>
+                    <span class="button-text">SELECCIONAR EXCEL</span>
                     <span class="button-glow"></span>
                   </button>
                   <button class="tech-button secondary" id="startProcessBtn" disabled>
-                    <span class="button-text">START PROCESS</span>
+                    <span class="button-text">INICIAR PROCESO</span>
                     <span class="button-glow"></span>
                   </button>
                 </div>
                 
                 <div class="file-status" id="fileStatus">
-                  <div class="no-file" id="noFileSelected">NO FILE SELECTED</div>
+                  <div class="no-file" id="noFileSelected">NO SE SELECCIONÓ NINGÚN ARCHIVO</div>
                   <div class="file-info hidden" id="fileInfo">
                     <div class="file-stats">
                       <div class="file-name" id="fileName"></div>
@@ -145,7 +145,7 @@
                     </div>
                     <div class="file-readiness">
                       <div class="status-indicator ready"></div>
-                      <span>READY</span>
+                      <span>LISTO</span>
                     </div>
                   </div>
                 </div>
@@ -155,7 +155,7 @@
             <!-- Processing Section (Initially Hidden) -->
             <div class="module-section processing-info hidden" id="processingSection">
               <div class="module-header">
-                <h2>PROCESSING</h2>
+                <h2>PROCESANDO</h2>
                 <div class="module-indicator active"></div>
               </div>
               
@@ -182,11 +182,11 @@
                 </div>
                 
                 <div class="processing-status">
-                  <p>Analyzing and extracting data patterns...</p>
+                  <p>Inicializando navegador...</p>
                   
                   <div class="progress-container">
                     <div class="progress-stats">
-                      <span>PROGRESS</span>
+                      <span>PROGRESO</span>
                       <span id="progressPercentage">0%</span>
                     </div>
                     <div class="tech-progress-bar">
@@ -211,7 +211,7 @@
             <!-- Results Section -->
             <div class="module-section results-section">
               <div class="module-header">
-                <h2>RESULTS</h2>
+                <h2>RESULTADOS</h2>
                 <div class="module-indicator"></div>
               </div>
               
@@ -250,7 +250,7 @@
               <div class="tech-dot"></div>
               <div class="tech-dot"></div>
             </div>
-            <h2>PROCESS <span>COMPLETED</span></h2>
+            <h2>PROCESO <span>COMPLETADO</span></h2>
             <div class="tech-dots">
               <div class="tech-dot"></div>
               <div class="tech-dot"></div>
@@ -269,7 +269,7 @@
                 </div>
                 <div class="stat-content">
                   <div class="stat-value counter" id="totalContacts">0</div>
-                  <div class="stat-label">CONTACTS</div>
+                  <div class="stat-label">EXPEDIENTES REVISADOS</div>
                 </div>
                 <div class="stat-indicator"></div>
               </div>
@@ -283,7 +283,7 @@
                 </div>
                 <div class="stat-content">
                   <div class="stat-value counter" id="totalFiltered">0</div>
-                  <div class="stat-label">FILTERED</div>
+                  <div class="stat-label">EXPEDIENTES CON COSTO</div>
                 </div>
                 <div class="stat-indicator"></div>
               </div>
@@ -297,18 +297,18 @@
                 </div>
                 <div class="stat-content">
                   <div class="stat-value" id="processingTime">0s</div>
-                  <div class="stat-label">TIME</div>
+                  <div class="stat-label">TIEMPO</div>
                 </div>
                 <div class="stat-indicator"></div>
               </div>
             </div>
             
             <div class="completion-message">
-              <p>Data processing completed successfully. Your results have been saved and are ready for review.</p>
+              <p>El procesamiento de expedientes ha sido completado con éxito. Los resultados han sido guardados y están listos para su revisión.</p>
             </div>
             
             <button class="tech-button primary" id="closeModalBtn">
-              <span class="button-text">CLOSE</span>
+              <span class="button-text">OK</span>
               <span class="button-glow"></span>
             </button>
           </div>

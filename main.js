@@ -24,8 +24,9 @@ const circlePercentage = document.getElementById('circlePercentage');
 // State variables
 let selectedFile = null;
 let startTime = null;
-let mockContactsTotal = 583; // Mock data for demo purposes
-let mockFilteredTotal = 397; // Mock data for demo purposes
+let mockContactsTotal = 95; // Expedientes revisados
+let mockFilteredTotal = 8; // Expedientes con costo
+let mockAcceptedTotal = 7; // Expedientes aceptados
 let activeToasts = [];
 
 // Utility functions
@@ -53,7 +54,7 @@ function showToast(message, type = 'info', title = '') {
     switch(type) {
         case 'success':
             iconSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>';
-            title = title || 'Success';
+            title = title || 'Éxito';
             break;
         case 'error':
             iconSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>';
@@ -61,11 +62,11 @@ function showToast(message, type = 'info', title = '') {
             break;
         case 'warning':
             iconSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>';
-            title = title || 'Warning';
+            title = title || 'Advertencia';
             break;
         default:
             iconSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>';
-            title = title || 'Information';
+            title = title || 'Información';
     }
     
     // Set the toast content
@@ -155,33 +156,51 @@ function animateCounter(element, targetValue, duration = 2000) {
 selectFileBtn.addEventListener('click', () => {
     // Add loading state to button
     selectFileBtn.disabled = true;
-    selectFileBtn.querySelector('.button-text').textContent = 'SCANNING...';
+    selectFileBtn.querySelector('.button-text').textContent = 'ESCANEANDO...';
     
-    // Simulate a file selection dialog delay
-    setTimeout(() => {
-        // Create a mock file object
-        selectedFile = {
-            name: "contacts_example.xlsx",
-            size: 1024 * 1024 * 2.3, // 2.3 MB
-            type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-        };
-        
-        // Update UI with file info
-        noFileSelected.classList.add('hidden');
-        fileInfo.classList.remove('hidden');
-        fileName.textContent = selectedFile.name;
-        fileSize.textContent = formatBytes(selectedFile.size);
-        
-        // Enable the start process button
-        startProcessBtn.disabled = false;
+    // Create a file input element for file selection
+    const fileInput = document.createElement('input');
+    fileInput.type = 'file';
+    fileInput.accept = '.xlsx,.xls,.csv';
+    fileInput.style.display = 'none';
+    document.body.appendChild(fileInput);
+    
+    // Trigger click on file input
+    fileInput.click();
+    
+    // Handle file selection
+    fileInput.addEventListener('change', (e) => {
+        if (e.target.files.length > 0) {
+            // Get the selected file
+            selectedFile = e.target.files[0];
+            
+            // Update UI with file info
+            noFileSelected.classList.add('hidden');
+            fileInfo.classList.remove('hidden');
+            fileName.textContent = selectedFile.name;
+            fileSize.textContent = formatBytes(selectedFile.size);
+            
+            // Enable the start process button
+            startProcessBtn.disabled = false;
+            
+            // Show success toast
+            showToast('Archivo seleccionado correctamente', 'success', 'Archivo Listo');
+        } else {
+            // Reset button state
+            selectFileBtn.disabled = false;
+            selectFileBtn.querySelector('.button-text').textContent = 'SELECCIONAR EXCEL';
+            
+            // Show warning toast
+            showToast('No se seleccionó ningún archivo', 'warning', 'Atención');
+        }
         
         // Reset button state
         selectFileBtn.disabled = false;
-        selectFileBtn.querySelector('.button-text').textContent = 'SELECT FILE';
+        selectFileBtn.querySelector('.button-text').textContent = 'SELECCIONAR EXCEL';
         
-        // Show success toast
-        showToast('File selected successfully', 'success', 'File Ready');
-    }, 1500);
+        // Remove the file input element
+        document.body.removeChild(fileInput);
+    });
 });
 
 startProcessBtn.addEventListener('click', () => {
@@ -191,7 +210,7 @@ startProcessBtn.addEventListener('click', () => {
     startProcessing();
     
     // Show info toast
-    showToast('Process started', 'info', 'Processing');
+    showToast('Proceso iniciado', 'info', 'Procesando');
 });
 
 closeModalBtn.addEventListener('click', () => {
@@ -202,7 +221,7 @@ closeModalBtn.addEventListener('click', () => {
     }, 300);
     
     // Show completed toast
-    showToast('Process completed successfully', 'success', 'Completed');
+    showToast('Proceso completado con éxito', 'success', 'Completado');
 });
 
 // Processing functions
@@ -242,14 +261,31 @@ function startProcessing() {
         // Update progress UI
         updateProgress(progress);
         
-        // Update circle progress
-        updateCircleProgress(progress * 0.68); // 68% for filtered/total ratio
+        // Update circle progress - percentage of expedientes con costo/total
+        updateCircleProgress(progress * 0.08); // 8% for filtered/total ratio
         
-        // Update real-time results
-        const contactsProcessed = Math.floor((progress / 100) * mockContactsTotal);
-        const filteredContacts = Math.floor(contactsProcessed * 0.68);
-        updateRealtimeResults(contactsProcessed, filteredContacts);
+        // Update real-time results with expediente display
+        const processedCount = Math.floor((progress / 100) * mockContactsTotal);
+        const filteredCount = Math.floor(processedCount * 0.08);
+        
+        updateProcessingMessage(progress);
+        updateRealtimeResults(processedCount, filteredCount);
     }, 200);
+}
+
+function updateProcessingMessage(progress) {
+    const processingStatus = document.querySelector('.processing-status p');
+    if (progress < 10) {
+        processingStatus.textContent = 'Inicializando navegador...';
+    } else if (progress < 30) {
+        processingStatus.textContent = 'Conectando a la base de datos...';
+    } else if (progress < 60) {
+        processingStatus.textContent = 'Analizando expedientes...';
+    } else if (progress < 90) {
+        processingStatus.textContent = 'Procesando información...';
+    } else {
+        processingStatus.textContent = 'Finalizando proceso...';
+    }
 }
 
 function updateProgress(value) {
@@ -258,11 +294,38 @@ function updateProgress(value) {
     progressPercentage.textContent = `${percent}%`;
 }
 
-function updateRealtimeResults(contacts, filtered) {
+function updateRealtimeResults(expedientes, expedientesConCosto) {
+    // Generate sample expediente records as processing progresses
+    const expedientesArray = [];
+    
+    // Add sample expedientes data
+    if (expedientes >= 15) {
+        expedientesArray.push('<p>✓ Expediente: 20711475 - Fila: 2</p>');
+    }
+    if (expedientes >= 30) {
+        expedientesArray.push('<p>✓ Expediente: 20709293 - Fila: 3</p>');
+    }
+    if (expedientes >= 45) {
+        expedientesArray.push('<p>✓ Expediente: 20709019 - Fila: 4</p>');
+    }
+    if (expedientes >= 60) {
+        expedientesArray.push('<p>✓ Expediente: 20706294 - Fila: 5</p>');
+    }
+    if (expedientes >= 75) {
+        expedientesArray.push('<p>✓ Expediente: 20706202 - Fila: 6</p>');
+    }
+    if (expedientes >= 85) {
+        expedientesArray.push('<p>✓ Expediente: 20704111 - Fila: 7</p>');
+    }
+    if (expedientes >= 95) {
+        expedientesArray.push('<p>✓ Expediente: 20703175 - Fila: 8</p>');
+    }
+    
     // Update the results panel in real-time
     resultsSummary.innerHTML = `
-        <p>Processed contacts: <strong>${contacts}</strong></p>
-        <p>Filtered contacts: <strong>${filtered}</strong></p>
+        <p>Expedientes procesados: <strong>${expedientes}</strong></p>
+        <p>Expedientes con costo: <strong>${expedientesConCosto}</strong></p>
+        ${expedientesArray.join('')}
     `;
 }
 
@@ -270,8 +333,8 @@ function finishProcessing() {
     // Calculate elapsed time
     const elapsedTime = ((performance.now() - startTime) / 1000).toFixed(1);
     
-    // Update circle progress to final value (68%)
-    updateCircleProgress(68);
+    // Update circle progress to final value (8%)
+    updateCircleProgress(8);
     
     // Hide processing section with animation
     processingSection.classList.add('hidden');
@@ -282,10 +345,11 @@ function finishProcessing() {
     
     // Add detailed results
     resultsSummary.innerHTML = `
-        <p>Processed <strong class="highlight">${mockContactsTotal}</strong> contacts in total.</p>
-        <p>Filtered <strong class="highlight">${mockFilteredTotal}</strong> unique contacts.</p>
-        <p>Processing time: <strong>${elapsedTime}s</strong></p>
-        <p>Results file saved to <strong>C:/Data/results.xlsx</strong></p>
+        <p>Procesados <strong class="highlight">${mockContactsTotal}</strong> expedientes en total.</p>
+        <p>Encontrados <strong class="highlight">${mockFilteredTotal}</strong> expedientes con costo.</p>
+        <p>Aceptados <strong class="highlight">${mockAcceptedTotal}</strong> expedientes.</p>
+        <p>Tiempo de procesamiento: <strong>${elapsedTime}s</strong></p>
+        <p>Resultados guardados en <strong>C:/Data/expedientes_resultados.xlsx</strong></p>
     `;
     
     // Reset buttons
@@ -350,6 +414,6 @@ document.addEventListener('DOMContentLoaded', () => {
         mainApp.classList.remove('hidden');
         
         // Show success toast
-        showToast('License validated successfully', 'success', 'Welcome');
+        showToast('Licencia validada correctamente', 'success', 'Bienvenido');
     }, 3000);
 });
