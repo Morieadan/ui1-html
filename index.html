@@ -1,165 +1,145 @@
 
 <!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline';">
-    <title>IKE Expedientes Automation</title>
-    <link rel="stylesheet" href="styles.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
-</head>
-<body>
-    <!-- Vista: Validación de Licencia -->
-    <!-- Esta sección se muestra mientras se verifica la licencia del sistema -->
-    <div id="licenseValidation" class="screen" data-process="license-validation">
-        <div class="validation-container">
-            <div class="icon-container">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="shield-icon">
-                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Electron App</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/styles.css">
+  </head>
+  <body>
+    <div id="root">
+      <!-- App Container con el "Chrome" de ventana -->
+      <div class="screen">
+        <div class="app-container">
+          <div class="window-header">
+            <div class="traffic-lights">
+              <div class="traffic-light red"></div>
+              <div class="traffic-light yellow"></div>
+              <div class="traffic-light green"></div>
+            </div>
+            <div class="window-title">Scraper App</div>
+          </div>
+          
+          <div class="content-area">
+            <div class="main-title">
+              <h1>Data Scraper</h1>
+              <div class="separator"></div>
+            </div>
+            
+            <!-- Sección de Archivo -->
+            <div class="file-section">
+              <h2>Seleccionar Archivo</h2>
+              
+              <div class="actions">
+                <button class="action-button primary" id="selectFileBtn">Seleccionar Archivo</button>
+                <button class="action-button secondary" id="startProcessBtn" disabled>Iniciar Proceso</button>
+              </div>
+              
+              <div class="file-status" id="fileStatus">
+                <div class="no-file" id="noFileSelected">No hay archivo seleccionado</div>
+                <div class="file-info hidden" id="fileInfo">
+                  <div class="file-name" id="fileName"></div>
+                  <div class="file-size" id="fileSize"></div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Procesamiento (inicialmente oculto) -->
+            <div class="processing-info hidden" id="processingSection">
+              <div class="icon-container">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M19 9L19 17C19 18.1046 18.1046 19 17 19L7 19C5.89543 19 5 18.1046 5 17L5 7C5 5.89543 5.89543 5 7 5L13 5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                  <path d="M13 5L19 5M19 5L19 11M19 5L12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
-            </div>
-            <div class="loader"></div>
-            <h2>VALIDANDO <span>LICENCIA</span></h2>
-            <div class="loading-dots">
-                <div class="dot"></div>
-                <div class="dot"></div>
-                <div class="dot"></div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Vista: Pantalla Principal -->
-    <!-- Interfaz principal donde el usuario selecciona el archivo Excel -->
-    <div id="mainScreen" class="screen hidden" data-process="file-selection">
-        <div class="app-container">
-            <div class="window-header">
-                <div class="traffic-lights">
-                    <div class="traffic-light red"></div>
-                    <div class="traffic-light yellow"></div>
-                    <div class="traffic-light green"></div>
+              </div>
+              <h3>Procesando datos</h3>
+              <p>Espere mientras se procesan los datos del archivo seleccionado.</p>
+              
+              <div class="progress-container">
+                <div class="progress-header">
+                  <span>Progreso</span>
+                  <span id="progressPercentage">0%</span>
                 </div>
-                <h1 class="window-title">IKE Expedientes Automation</h1>
+                <div class="progress-bar">
+                  <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+                </div>
+              </div>
             </div>
             
-            <div class="content-area">
-                <div class="main-title">
-                    <h1>IKE Expedientes Automation</h1>
-                    <div class="separator"></div>
-                </div>
-
-                <div class="file-section">
-                    <h2>Archivo de Expedientes</h2>
-                    
-                    <div class="actions">
-                        <button id="selectFileBtn" class="action-button primary" data-action="select-file">
-                            Seleccionar Excel
-                        </button>
-                        <button id="startProcessBtn" class="action-button secondary" data-action="start-process" disabled>
-                            Iniciar Proceso
-                        </button>
-                    </div>
-                    
-                    <div id="fileStatus" class="file-status">
-                        <p>No se seleccionó ningún archivo.</p>
-                    </div>
-                    
-                    <input type="file" id="fileInput" accept=".xlsx,.xls" class="hidden">
-                </div>
-                
-                <div class="results-section">
-                    <h2>Resultados</h2>
-                    <div id="resultsContent" class="results-content">
-                        <!-- Los resultados se mostrarán aquí durante el proceso -->
-                    </div>
-                </div>
+            <!-- Sección de Resultados -->
+            <div class="results-section">
+              <h2>Resultados</h2>
+              <div class="results-content" id="resultsContent">
+                <div class="results-summary" id="resultsSummary"></div>
+              </div>
             </div>
+          </div>
         </div>
-    </div>
-
-    <!-- Vista: Procesamiento -->
-    <!-- Muestra el progreso del scraping -->
-    <div id="processingView" class="screen hidden" data-process="scraping-progress">
-        <div class="app-container">
-            <div class="window-header">
-                <div class="traffic-lights">
-                    <div class="traffic-light red"></div>
-                    <div class="traffic-light yellow"></div>
-                    <div class="traffic-light green"></div>
-                </div>
-                <h1 class="window-title">IKE Expedientes Automation</h1>
-            </div>
-            
-            <div class="content-area">
-                <div class="processing-info">
-                    <div class="icon-container">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="database-icon">
-                            <ellipse cx="12" cy="5" rx="9" ry="3"/>
-                            <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/>
-                            <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>
-                        </svg>
-                    </div>
-                    <h3>Procesando expediente <span id="currentFile" data-info="current-file">0</span></h3>
-                    <p>Total de expedientes: <span id="totalFiles" data-info="total-files">0</span></p>
-                    
-                    <div class="progress-container">
-                        <div class="progress-header">
-                            <span>Progreso del Scraping</span>
-                            <span id="progressPercentage" data-info="progress">0%</span>
-                        </div>
-                        <div class="progress-bar">
-                            <div id="progressFill" class="progress-fill"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Vista: Resultados -->
-    <!-- Muestra los resultados del proceso de scraping en un modal -->
-    <div id="resultsModal" class="modal hidden" data-process="results">
+      </div>
+      
+      <!-- Modal de Resultados (inicialmente oculto) -->
+      <div class="modal hidden" id="resultsModal">
         <div class="modal-content">
-            <div class="icon-container">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="check-icon">
-                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
-                    <polyline points="22 4 12 14.01 9 11.01"/>
-                </svg>
+          <div class="icon-container">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M5 13L9 17L19 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <h2>Proceso <span>completado</span></h2>
+          
+          <div class="stats-grid">
+            <div class="stat-box">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M16 7C16 9.20914 14.2091 11 12 11C9.79086 11 8 9.20914 8 7C8 4.79086 9.79086 3 12 3C14.2091 3 16 4.79086 16 7Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M12 14C8.13401 14 5 17.134 5 21H19C19 17.134 15.866 14 12 14Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              <div class="stat-value" id="totalContacts">0</div>
+              <div class="stat-label">Contactos</div>
             </div>
-            <h2>Proceso de Scraping <span>Completado</span></h2>
-            <div class="stats-grid">
-                <div class="stat-box" data-stat="total-processed">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <ellipse cx="12" cy="5" rx="9" ry="3"/>
-                        <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/>
-                        <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>
-                    </svg>
-                    <div class="stat-value">0</div>
-                    <div class="stat-label">Expedientes Procesados</div>
-                </div>
-                <div class="stat-box" data-stat="with-cost">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <line x1="12" y1="1" x2="12" y2="23"/>
-                        <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
-                    </svg>
-                    <div class="stat-value">0</div>
-                    <div class="stat-label">Con Costo</div>
-                </div>
-                <div class="stat-box" data-stat="accepted">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <polyline points="9 11 12 14 22 4"/>
-                        <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
-                    </svg>
-                    <div class="stat-value">0</div>
-                    <div class="stat-label">Aceptados</div>
-                </div>
+            <div class="stat-box">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M3 8L15 8M15 8C15 9.65686 16.3431 11 18 11C19.6569 11 21 9.65685 21 8C21 6.34315 19.6569 5 18 5C16.3431 5 15 6.34315 15 8Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M21 16L9 16M9 16C9 17.6569 7.65685 19 6 19C4.34315 19 3 17.6569 3 16C3 14.3431 4.34315 13 6 13C7.65685 13 9 14.3431 9 16Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              <div class="stat-value" id="totalFiltered">0</div>
+              <div class="stat-label">Filtrados</div>
             </div>
-            <button id="closeResults" class="close-button" data-action="close-results">
-                Cerrar
-            </button>
+            <div class="stat-box">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 8V12L15 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              <div class="stat-value" id="processingTime">0s</div>
+              <div class="stat-label">Tiempo</div>
+            </div>
+          </div>
+          
+          <button class="close-button" id="closeModalBtn">Cerrar</button>
         </div>
+      </div>
+      
+      <!-- Vista de validación de licencia (inicialmente oculta) -->
+      <div class="validation-container hidden" id="licenseValidation">
+        <div class="icon-container">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M9 12L11 14L15 10M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <h2>Validando <span>licencia</span></h2>
+        <div class="loader"></div>
+        <div class="loading-dots">
+          <div class="dot"></div>
+          <div class="dot"></div>
+          <div class="dot"></div>
+        </div>
+      </div>
     </div>
 
-    <script src="main.js"></script>
-</body>
+    <!-- Scripts -->
+    <script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>
+    <script src="/main.js"></script>
+  </body>
 </html>
