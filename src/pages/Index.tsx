@@ -2,7 +2,7 @@
 import React, { useEffect } from 'react';
 
 const Index = () => {
-  // This component is just a placeholder to avoid build errors
+  // This component is just a placeholder to allow React to build
   // The actual content is served from index.html
   
   useEffect(() => {

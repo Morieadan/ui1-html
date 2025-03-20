@@ -16,12 +16,17 @@ const totalFiltered = document.getElementById('totalFiltered');
 const processingTime = document.getElementById('processingTime');
 const resultsSummary = document.getElementById('resultsSummary');
 const licenseValidation = document.getElementById('licenseValidation');
+const mainApp = document.getElementById('mainApp');
+const currentTime = document.getElementById('currentTime');
+const circleProgress = document.getElementById('circleProgress');
+const circlePercentage = document.getElementById('circlePercentage');
 
 // State variables
 let selectedFile = null;
 let startTime = null;
 let mockContactsTotal = 583; // Mock data for demo purposes
 let mockFilteredTotal = 397; // Mock data for demo purposes
+let activeToasts = [];
 
 // Utility functions
 function formatBytes(bytes, decimals = 2) {
@@ -36,28 +41,121 @@ function formatBytes(bytes, decimals = 2) {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
 }
 
-function showToast(message, type = 'info') {
-    // Simple toast notification implementation
-    const toast = document.createElement('div');
-    toast.className = `toast toast-${type}`;
-    toast.textContent = message;
-    document.body.appendChild(toast);
+function showToast(message, type = 'info', title = '') {
+    const toastContainer = document.getElementById('toastContainer');
     
-    // Add visible class to trigger animation
+    // Create toast element
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    
+    // Generate appropriate icon based on type
+    let iconSvg = '';
+    switch(type) {
+        case 'success':
+            iconSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>';
+            title = title || 'Success';
+            break;
+        case 'error':
+            iconSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>';
+            title = title || 'Error';
+            break;
+        case 'warning':
+            iconSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>';
+            title = title || 'Warning';
+            break;
+        default:
+            iconSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>';
+            title = title || 'Information';
+    }
+    
+    // Set the toast content
+    toast.innerHTML = `
+        <div class="toast-icon">${iconSvg}</div>
+        <div class="toast-content">
+            <div class="toast-title">${title}</div>
+            <div class="toast-message">${message}</div>
+        </div>
+    `;
+    
+    // Add to the DOM
+    toastContainer.appendChild(toast);
+    
+    // Add to active toasts array
+    activeToasts.push(toast);
+    
+    // Trigger animation
     setTimeout(() => toast.classList.add('visible'), 10);
     
-    // Remove toast after 3 seconds
-    setTimeout(() => {
+    // Remove after timeout
+    const toastTimeout = setTimeout(() => {
         toast.classList.remove('visible');
-        setTimeout(() => toast.remove(), 300);
-    }, 3000);
+        setTimeout(() => {
+            if (toastContainer.contains(toast)) {
+                toastContainer.removeChild(toast);
+            }
+            activeToasts = activeToasts.filter(t => t !== toast);
+        }, 300);
+    }, 5000);
+    
+    // Add click to dismiss
+    toast.addEventListener('click', () => {
+        clearTimeout(toastTimeout);
+        toast.classList.remove('visible');
+        setTimeout(() => {
+            if (toastContainer.contains(toast)) {
+                toastContainer.removeChild(toast);
+            }
+            activeToasts = activeToasts.filter(t => t !== toast);
+        }, 300);
+    });
+}
+
+function updateCircleProgress(percent) {
+    // Calculate the stroke-dashoffset value
+    const radius = 70;
+    const circumference = 2 * Math.PI * radius;
+    const offset = circumference - (percent / 100) * circumference;
+    
+    // Apply the dashoffset to the circle
+    circleProgress.style.strokeDasharray = `${circumference} ${circumference}`;
+    circleProgress.style.strokeDashoffset = offset;
+    
+    // Update the percentage text
+    circlePercentage.textContent = Math.round(percent);
+}
+
+function updateCurrentTime() {
+    const now = new Date();
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    const seconds = String(now.getSeconds()).padStart(2, '0');
+    currentTime.textContent = `${hours}:${minutes}:${seconds}`;
+}
+
+function animateCounter(element, targetValue, duration = 2000) {
+    const startValue = 0;
+    const increment = targetValue / (duration / 16);
+    let currentValue = startValue;
+    
+    const animate = () => {
+        currentValue += increment;
+        if (currentValue >= targetValue) {
+            element.textContent = Math.round(targetValue).toString();
+            return;
+        }
+        
+        element.textContent = Math.round(currentValue).toString();
+        requestAnimationFrame(animate);
+    };
+    
+    animate();
 }
 
 // Event Listeners
 selectFileBtn.addEventListener('click', () => {
     // Add loading state to button
-    selectFileBtn.classList.add('loading');
-    selectFileBtn.textContent = 'Selecting...';
+    selectFileBtn.disabled = true;
+    selectFileBtn.querySelector('.button-text').textContent = 'SCANNING...';
     
     // Simulate a file selection dialog delay
     setTimeout(() => {
@@ -78,33 +176,22 @@ selectFileBtn.addEventListener('click', () => {
         startProcessBtn.disabled = false;
         
         // Reset button state
-        selectFileBtn.classList.remove('loading');
-        selectFileBtn.textContent = 'Select File';
+        selectFileBtn.disabled = false;
+        selectFileBtn.querySelector('.button-text').textContent = 'SELECT FILE';
         
         // Show success toast
-        showToast('File selected successfully', 'success');
-    }, 800);
+        showToast('File selected successfully', 'success', 'File Ready');
+    }, 1500);
 });
 
 startProcessBtn.addEventListener('click', () => {
     if (!selectedFile) return;
 
-    // Show license validation screen
-    document.querySelector('.screen').classList.add('hidden');
-    licenseValidation.classList.remove('hidden');
+    // Show processing info
+    startProcessing();
     
-    // Simulate license validation
-    setTimeout(() => {
-        // Hide license validation and show main app again
-        licenseValidation.classList.add('hidden');
-        document.querySelector('.screen').classList.remove('hidden');
-        
-        // Start processing
-        startProcessing();
-        
-        // Show info toast
-        showToast('Processing started', 'info');
-    }, 2000);
+    // Show info toast
+    showToast('Process started', 'info', 'Processing');
 });
 
 closeModalBtn.addEventListener('click', () => {
@@ -115,7 +202,7 @@ closeModalBtn.addEventListener('click', () => {
     }, 300);
     
     // Show completed toast
-    showToast('Process completed successfully', 'success');
+    showToast('Process completed successfully', 'success', 'Completed');
 });
 
 // Processing functions
@@ -125,7 +212,6 @@ function startProcessing() {
     
     // Show processing section with animation
     processingSection.classList.remove('hidden');
-    setTimeout(() => processingSection.classList.add('visible'), 10);
     
     // Disable buttons during processing
     selectFileBtn.disabled = true;
@@ -133,6 +219,9 @@ function startProcessing() {
     
     // Record start time
     startTime = performance.now();
+    
+    // Update the results circle to 0%
+    updateCircleProgress(0);
     
     // Simulate progressive processing
     let progress = 0;
@@ -152,6 +241,9 @@ function startProcessing() {
         
         // Update progress UI
         updateProgress(progress);
+        
+        // Update circle progress
+        updateCircleProgress(progress * 0.68); // 68% for filtered/total ratio
         
         // Update real-time results
         const contactsProcessed = Math.floor((progress / 100) * mockContactsTotal);
@@ -178,20 +270,15 @@ function finishProcessing() {
     // Calculate elapsed time
     const elapsedTime = ((performance.now() - startTime) / 1000).toFixed(1);
     
-    // Update stats in the modal
-    totalContacts.textContent = mockContactsTotal.toString();
-    totalFiltered.textContent = mockFilteredTotal.toString();
-    processingTime.textContent = `${elapsedTime}s`;
+    // Update circle progress to final value (68%)
+    updateCircleProgress(68);
     
     // Hide processing section with animation
-    processingSection.classList.remove('visible');
-    setTimeout(() => {
-        processingSection.classList.add('hidden');
-        
-        // Show the results modal with animation
-        resultsModal.classList.remove('hidden');
-        setTimeout(() => resultsModal.classList.add('visible'), 10);
-    }, 300);
+    processingSection.classList.add('hidden');
+    
+    // Show the results modal with animation
+    resultsModal.classList.remove('hidden');
+    setTimeout(() => resultsModal.classList.add('visible'), 10);
     
     // Add detailed results
     resultsSummary.innerHTML = `
@@ -204,82 +291,65 @@ function finishProcessing() {
     // Reset buttons
     selectFileBtn.disabled = false;
     startProcessBtn.disabled = false;
+    
+    // Animate the stat counters
+    animateCounter(totalContacts, mockContactsTotal);
+    animateCounter(totalFiltered, mockFilteredTotal);
+    processingTime.textContent = `${elapsedTime}s`;
+    
+    // Add animation to stat indicators
+    const statIndicators = document.querySelectorAll('.stat-indicator');
+    statIndicators.forEach(indicator => {
+        setTimeout(() => {
+            indicator.style.transform = 'scaleX(1)';
+        }, 300);
+    });
 }
 
-// Initial license validation on app start
+// License validation on app start
 document.addEventListener('DOMContentLoaded', () => {
-    // Add styles for toast notifications
-    const style = document.createElement('style');
-    style.textContent = `
-        .toast {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            min-width: 200px;
-            padding: 15px 20px;
-            border-radius: 10px;
-            background: var(--surface);
-            color: var(--text-primary);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-            z-index: 1000;
-            transform: translateY(30px);
-            opacity: 0;
-            transition: transform 0.3s ease, opacity 0.3s ease;
-            border-left: 4px solid var(--primary);
-        }
-        
-        .toast.visible {
-            transform: translateY(0);
-            opacity: 1;
-        }
-        
-        .toast-success {
-            border-left-color: var(--success);
-        }
-        
-        .toast-error {
-            border-left-color: var(--danger);
-        }
-        
-        .toast-info {
-            border-left-color: var(--primary);
-        }
-        
-        .toast-warning {
-            border-left-color: var(--warning);
-        }
-        
-        .action-button.loading {
-            position: relative;
-            pointer-events: none;
-        }
-        
-        .action-button.loading::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 15px;
-            width: 12px;
-            height: 12px;
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            border-top-color: white;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            transform: translateY(-50%);
-        }
-        
-        .processing-info.visible {
-            animation: fadeIn 0.3s ease;
-        }
-    `;
+    // Setup SVG gradient for circle progress
+    const svgNS = "http://www.w3.org/2000/svg";
+    const defs = document.createElementNS(svgNS, "defs");
+    const gradient = document.createElementNS(svgNS, "linearGradient");
+    gradient.setAttribute("id", "gradient");
+    gradient.setAttribute("x1", "0%");
+    gradient.setAttribute("y1", "0%");
+    gradient.setAttribute("x2", "100%");
+    gradient.setAttribute("y2", "0%");
     
-    document.head.appendChild(style);
-
-    // Show main screen initially
-    document.querySelector('.screen').classList.remove('hidden');
+    const stop1 = document.createElementNS(svgNS, "stop");
+    stop1.setAttribute("offset", "0%");
+    stop1.setAttribute("stop-color", "#00b3fe");
     
-    // Simulate initial validation
+    const stop2 = document.createElementNS(svgNS, "stop");
+    stop2.setAttribute("offset", "100%");
+    stop2.setAttribute("stop-color", "#8a5fff");
+    
+    gradient.appendChild(stop1);
+    gradient.appendChild(stop2);
+    defs.appendChild(gradient);
+    
+    const circleSvg = document.querySelector('.circle-progress');
+    circleSvg.insertBefore(defs, circleSvg.firstChild);
+    
+    // Set the initial dasharray for the circle
+    const radius = 70;
+    const circumference = 2 * Math.PI * radius;
+    circleProgress.style.strokeDasharray = `${circumference} ${circumference}`;
+    circleProgress.style.strokeDashoffset = circumference;
+    
+    // Start clock update
+    updateCurrentTime();
+    setInterval(updateCurrentTime, 1000);
+    
+    // Simulate license validation check
     setTimeout(() => {
-        showToast('Application ready', 'success');
-    }, 1000);
+        // Success: Hide the license validation screen and show the main app
+        licenseValidation.classList.add('hidden');
+        mainApp.classList.remove('hidden');
+        
+        // Show success toast
+        showToast('License validated successfully', 'success', 'Welcome');
+    }, 3000);
 });

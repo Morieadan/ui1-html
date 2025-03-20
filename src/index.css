@@ -1,3 +1,5 @@
 
 /* This file imports the main styles.css file */
 @import "/styles.css";
+
+/* Additional React-specific styles can be added here if needed */
