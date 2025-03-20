@@ -1,10 +1,11 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline' https://cdn.gpteng.co;">
-    <title>AutoMike - Sistema de Validación</title>
+    <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline';">
+    <title>IKE Expedientes Automation</title>
     <link rel="stylesheet" href="styles.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 </head>
@@ -31,32 +32,47 @@
     <!-- Vista: Pantalla Principal -->
     <!-- Interfaz principal donde el usuario selecciona el archivo Excel -->
     <div id="mainScreen" class="screen hidden" data-process="file-selection">
-        <div class="container">
-            <div class="header">
-                <h1>AUTO<span>MIKE</span></h1>
-                <p>Sistema de Validación Automatizada</p>
+        <div class="app-container">
+            <div class="window-header">
+                <div class="traffic-lights">
+                    <div class="traffic-light red"></div>
+                    <div class="traffic-light yellow"></div>
+                    <div class="traffic-light green"></div>
+                </div>
+                <h1 class="window-title">IKE Expedientes Automation</h1>
             </div>
-
-            <div class="main-panel">
-                <!-- Zona de selección de archivo Excel -->
-                <div id="uploadContainer" class="upload-container" data-action="file-upload">
-                    <input type="file" id="fileInput" accept=".xlsx,.xls" class="hidden">
-                    <div class="upload-content">
-                        <div class="icon-container" id="uploadIcon">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="upload-icon">
-                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                                <polyline points="17 8 12 3 7 8"/>
-                                <line x1="12" y1="3" x2="12" y2="15"/>
-                            </svg>
-                        </div>
-                        <p>Arrastra un archivo Excel o haz clic para seleccionar</p>
-                    </div>
+            
+            <div class="content-area">
+                <div class="main-title">
+                    <h1>IKE Expedientes Automation</h1>
+                    <div class="separator"></div>
                 </div>
 
-                <!-- Botón para iniciar el proceso de scraping -->
-                <button id="startButton" class="start-button" disabled data-action="start-scraping">
-                    Iniciar Proceso
-                </button>
+                <div class="file-section">
+                    <h2>Archivo de Expedientes</h2>
+                    
+                    <div class="actions">
+                        <button id="selectFileBtn" class="action-button primary" data-action="select-file">
+                            Seleccionar Excel
+                        </button>
+                        <button id="startProcessBtn" class="action-button secondary" data-action="start-process" disabled>
+                            Iniciar Proceso
+                        </button>
+                    </div>
+                    
+                    <div id="fileStatus" class="file-status">
+                        <p>No se seleccionó ningún archivo.</p>
+                    </div>
+                    
+                    <input type="file" id="fileInput" accept=".xlsx,.xls" class="hidden">
+                </div>
+                
+                <div class="results-section">
+                    <h2>Resultados</h2>
+                    <div id="resultsContent" class="results-content">
+                        <!-- Los resultados se mostrarán aquí durante el proceso -->
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -64,30 +80,44 @@
     <!-- Vista: Procesamiento -->
     <!-- Muestra el progreso del scraping -->
     <div id="processingView" class="screen hidden" data-process="scraping-progress">
-        <div class="processing-container">
-            <div class="icon-container">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="database-icon">
-                    <ellipse cx="12" cy="5" rx="9" ry="3"/>
-                    <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/>
-                    <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>
-                </svg>
-            </div>
-            <h3>Procesando expediente <span id="currentFile" data-info="current-file">0</span></h3>
-            <p>Total de expedientes: <span id="totalFiles" data-info="total-files">98</span></p>
-            <div class="progress-container">
-                <div class="progress-header">
-                    <span>Progreso del Scraping</span>
-                    <span id="progressPercentage" data-info="progress">0%</span>
+        <div class="app-container">
+            <div class="window-header">
+                <div class="traffic-lights">
+                    <div class="traffic-light red"></div>
+                    <div class="traffic-light yellow"></div>
+                    <div class="traffic-light green"></div>
                 </div>
-                <div class="progress-bar">
-                    <div id="progressFill" class="progress-fill"></div>
+                <h1 class="window-title">IKE Expedientes Automation</h1>
+            </div>
+            
+            <div class="content-area">
+                <div class="processing-info">
+                    <div class="icon-container">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="database-icon">
+                            <ellipse cx="12" cy="5" rx="9" ry="3"/>
+                            <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/>
+                            <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>
+                        </svg>
+                    </div>
+                    <h3>Procesando expediente <span id="currentFile" data-info="current-file">0</span></h3>
+                    <p>Total de expedientes: <span id="totalFiles" data-info="total-files">0</span></p>
+                    
+                    <div class="progress-container">
+                        <div class="progress-header">
+                            <span>Progreso del Scraping</span>
+                            <span id="progressPercentage" data-info="progress">0%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div id="progressFill" class="progress-fill"></div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
     <!-- Vista: Resultados -->
-    <!-- Muestra los resultados del proceso de scraping -->
+    <!-- Muestra los resultados del proceso de scraping en un modal -->
     <div id="resultsModal" class="modal hidden" data-process="results">
         <div class="modal-content">
             <div class="icon-container">
@@ -104,7 +134,7 @@
                         <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/>
                         <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>
                     </svg>
-                    <div class="stat-value">98</div>
+                    <div class="stat-value">0</div>
                     <div class="stat-label">Expedientes Procesados</div>
                 </div>
                 <div class="stat-box" data-stat="with-cost">
@@ -112,7 +142,7 @@
                         <line x1="12" y1="1" x2="12" y2="23"/>
                         <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
                     </svg>
-                    <div class="stat-value">15</div>
+                    <div class="stat-value">0</div>
                     <div class="stat-label">Con Costo</div>
                 </div>
                 <div class="stat-box" data-stat="accepted">
@@ -120,7 +150,7 @@
                         <polyline points="9 11 12 14 22 4"/>
                         <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
                     </svg>
-                    <div class="stat-value">11</div>
+                    <div class="stat-value">0</div>
                     <div class="stat-label">Aceptados</div>
                 </div>
             </div>
@@ -130,7 +160,6 @@
         </div>
     </div>
 
-    <script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>
     <script src="main.js"></script>
 </body>
 </html>

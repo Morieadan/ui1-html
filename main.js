@@ -1,85 +1,69 @@
 
-// Inicialización de la aplicación Electron
+/**
+ * IKE Expedientes Automation
+ * Script principal para la aplicación de escritorio Electron
+ * Maneja la interfaz de usuario y la comunicación con el backend de scraping
+ */
+
 document.addEventListener('DOMContentLoaded', () => {
-    // Referencias a elementos de la UI
+    // Referencias a elementos de la UI para cada vista
+    
+    // Vista de validación de licencia
     const licenseValidation = document.getElementById('licenseValidation');
+    
+    // Vista principal
     const mainScreen = document.getElementById('mainScreen');
-    const processingView = document.getElementById('processingView');
-    const resultsModal = document.getElementById('resultsModal');
-    const uploadContainer = document.getElementById('uploadContainer');
     const fileInput = document.getElementById('fileInput');
-    const startButton = document.getElementById('startButton');
-    const closeResults = document.getElementById('closeResults');
+    const selectFileBtn = document.getElementById('selectFileBtn');
+    const startProcessBtn = document.getElementById('startProcessBtn');
+    const fileStatus = document.getElementById('fileStatus');
+    const resultsContent = document.getElementById('resultsContent');
+    
+    // Vista de procesamiento
+    const processingView = document.getElementById('processingView');
+    const currentFile = document.getElementById('currentFile');
+    const totalFiles = document.getElementById('totalFiles');
     const progressFill = document.getElementById('progressFill');
     const progressPercentage = document.getElementById('progressPercentage');
-    const currentFile = document.getElementById('currentFile');
+    
+    // Vista de resultados
+    const resultsModal = document.getElementById('resultsModal');
+    const closeResults = document.getElementById('closeResults');
 
     /**
-     * FASE 1: Validación de Licencia
+     * FASE 1: Inicialización y validación de licencia
      * Esta fase simula la verificación de la licencia del sistema
      */
-    setTimeout(() => {
-        licenseValidation.classList.add('hidden');
-        mainScreen.classList.remove('hidden');
-    }, 2000);
+    function initApp() {
+        console.log('Iniciando aplicación IKE Expedientes Automation');
+        // Simulación de validación de licencia (en un caso real, esto se conectaría con el backend)
+        setTimeout(() => {
+            licenseValidation.classList.add('hidden');
+            mainScreen.classList.remove('hidden');
+        }, 2000);
+    }
 
     /**
-     * FASE 2: Selección de Archivo Excel
-     * Manejo de eventos para la selección de archivo mediante drag & drop o click
+     * FASE 2: Selección del archivo Excel
+     * Manejo de la selección de archivo 
      */
-    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-        uploadContainer.addEventListener(eventName, preventDefaults, false);
-        document.body.addEventListener(eventName, preventDefaults, false);
-    });
-
-    function preventDefaults(e) {
-        e.preventDefault();
-        e.stopPropagation();
-    }
-
-    // Efectos visuales para el drag & drop
-    ['dragenter', 'dragover'].forEach(eventName => {
-        uploadContainer.addEventListener(eventName, highlight, false);
-    });
-
-    ['dragleave', 'drop'].forEach(eventName => {
-        uploadContainer.addEventListener(eventName, unhighlight, false);
-    });
-
-    function highlight() {
-        uploadContainer.classList.add('drag-active');
-    }
-
-    function unhighlight() {
-        uploadContainer.classList.remove('drag-active');
-    }
-
-    // Eventos de selección de archivo
-    uploadContainer.addEventListener('click', () => {
+    selectFileBtn.addEventListener('click', () => {
         fileInput.click();
     });
 
     fileInput.addEventListener('change', handleFileSelect);
-    uploadContainer.addEventListener('drop', handleDrop);
 
     function handleFileSelect(e) {
         const file = e.target.files[0];
         if (file && isValidExcelFile(file)) {
-            updateUploadContainer(file);
-            startButton.disabled = false;
+            updateFileStatus(file);
+            startProcessBtn.disabled = false;
+        } else if (file) {
+            updateFileStatus(null, 'El archivo seleccionado no es un archivo Excel válido.');
+            startProcessBtn.disabled = true;
         }
     }
 
-    function handleDrop(e) {
-        const file = e.dataTransfer.files[0];
-        if (file && isValidExcelFile(file)) {
-            updateUploadContainer(file);
-            startButton.disabled = false;
-        }
-        unhighlight();
-    }
-
-    // Validación de archivo Excel
     function isValidExcelFile(file) {
         return file.type.includes('excel') || 
                file.type.includes('spreadsheet') || 
@@ -87,77 +71,137 @@ document.addEventListener('DOMContentLoaded', () => {
                file.name.endsWith('.xls');
     }
 
-    // Actualización visual del contenedor de archivo
-    function updateUploadContainer(file) {
-        const uploadContent = uploadContainer.querySelector('.upload-content');
-        uploadContent.innerHTML = `
-            <div class="icon-container">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <ellipse cx="12" cy="5" rx="9" ry="3"/>
-                    <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/>
-                    <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>
-                </svg>
+    function updateFileStatus(file, errorMessage = null) {
+        if (errorMessage) {
+            fileStatus.innerHTML = `<p class="error-message">${errorMessage}</p>`;
+            return;
+        }
+
+        if (file) {
+            fileStatus.innerHTML = `
+                <p class="file-name">Archivo seleccionado: <strong>${file.name}</strong></p>
+                <p class="file-size">Tamaño: ${formatFileSize(file.size)}</p>
+            `;
+        } else {
+            fileStatus.innerHTML = `<p>No se seleccionó ningún archivo.</p>`;
+        }
+    }
+
+    function formatFileSize(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+
+    /**
+     * FASE 3: Inicio y monitoreo del proceso de scraping
+     * Maneja el inicio del proceso y muestra el progreso
+     */
+    startProcessBtn.addEventListener('click', () => {
+        // Leer el archivo y enviarlo al backend
+        const file = fileInput.files[0];
+        if (!file) return;
+        
+        // Preparar la vista de procesamiento
+        mainScreen.classList.add('hidden');
+        processingView.classList.remove('hidden');
+        
+        // Aquí se conectaría con el backend para iniciar el proceso
+        // En esta simulación simplemente mostramos el progreso
+        simulateProcessing(file);
+    });
+
+    function simulateProcessing(file) {
+        // Esta función simula el proceso de scraping
+        // En una implementación real, esto se comunicaría con el backend de Puppeteer
+        
+        // Simulación de un total de expedientes
+        const totalExpedientes = Math.floor(Math.random() * 95) + 5; // Entre 5 y 100 expedientes
+        totalFiles.textContent = totalExpedientes;
+        
+        let expedientesCompletados = 0;
+        
+        // Actualizar el progreso periódicamente
+        const interval = setInterval(() => {
+            expedientesCompletados++;
+            currentFile.textContent = expedientesCompletados;
+            
+            const progress = Math.floor((expedientesCompletados / totalExpedientes) * 100);
+            progressFill.style.width = `${progress}%`;
+            progressPercentage.textContent = `${progress}%`;
+            
+            // Actualizar los resultados en tiempo real
+            updateResults(expedientesCompletados, totalExpedientes);
+            
+            if (expedientesCompletados >= totalExpedientes) {
+                clearInterval(interval);
+                setTimeout(showResultsModal, 1000, expedientesCompletados, totalExpedientes);
+            }
+        }, 200);
+    }
+
+    function updateResults(completed, total) {
+        // Actualiza la sección de resultados en tiempo real durante el proceso
+        // En una implementación real, estos datos vendrían del backend
+        
+        const conCosto = Math.floor(completed * 0.15); // Simular ~15% con costo
+        const aceptados = Math.floor(completed * 0.10); // Simular ~10% aceptados
+        
+        resultsContent.innerHTML = `
+            <div class="results-summary">
+                <p><strong>Expedientes procesados:</strong> ${completed} de ${total}</p>
+                <p><strong>Con costo:</strong> ${conCosto}</p>
+                <p><strong>Aceptados:</strong> ${aceptados}</p>
             </div>
-            <p class="file-name">${file.name}</p>
-            <p class="file-status">Archivo seleccionado</p>
         `;
     }
 
     /**
-     * FASE 3: Proceso de Scraping
-     * Manejo del proceso de scraping y actualización de la UI
+     * FASE 4: Mostrar resultados finales
+     * Muestra los resultados completos del proceso al finalizar
      */
-    startButton.addEventListener('click', () => {
-        mainScreen.classList.add('hidden');
-        processingView.classList.remove('hidden');
-        simulateProcessing();
-    });
-
-    function simulateProcessing() {
-        let progress = 0;
-        const totalFiles = 98;
-        const interval = setInterval(() => {
-            progress += 1;
-            progressFill.style.width = `${progress}%`;
-            progressPercentage.textContent = `${progress}%`;
-            currentFile.textContent = Math.floor((progress / 100) * totalFiles);
-
-            if (progress >= 100) {
-                clearInterval(interval);
-                setTimeout(showResults, 500);
-            }
-        }, 50);
-    }
-
-    /**
-     * FASE 4: Resultados
-     * Visualización y manejo de los resultados del scraping
-     */
-    function showResults() {
-        processingView.classList.add('hidden');
+    function showResultsModal(processed, total) {
+        // Actualizar estadísticas en el modal de resultados
+        const conCosto = Math.floor(processed * 0.15);
+        const aceptados = Math.floor(processed * 0.10);
+        
+        // Actualizar los valores en el modal
+        document.querySelector('[data-stat="total-processed"] .stat-value').textContent = processed;
+        document.querySelector('[data-stat="with-cost"] .stat-value').textContent = conCosto;
+        document.querySelector('[data-stat="accepted"] .stat-value').textContent = aceptados;
+        
+        // Mostrar el modal
         resultsModal.classList.remove('hidden');
     }
 
-    // Evento para cerrar resultados y reiniciar proceso
+    // Evento para cerrar el modal de resultados
     closeResults.addEventListener('click', () => {
         resultsModal.classList.add('hidden');
+        processingView.classList.add('hidden');
         mainScreen.classList.remove('hidden');
-        resetUploadContainer();
-        startButton.disabled = true;
+        
+        // Restablecer el estado
+        resetAppState();
     });
 
-    function resetUploadContainer() {
+    function resetAppState() {
+        // Limpiar la selección de archivo
         fileInput.value = '';
-        const uploadContent = uploadContainer.querySelector('.upload-content');
-        uploadContent.innerHTML = `
-            <div class="icon-container">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="upload-icon">
-                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                    <polyline points="17 8 12 3 7 8"/>
-                    <line x1="12" y1="3" x2="12" y2="15"/>
-                </svg>
-            </div>
-            <p>Arrastra un archivo Excel o haz clic para seleccionar</p>
-        `;
+        updateFileStatus(null);
+        startProcessBtn.disabled = true;
+        
+        // Restablecer progreso
+        progressFill.style.width = '0%';
+        progressPercentage.textContent = '0%';
+        currentFile.textContent = '0';
+        totalFiles.textContent = '0';
+        
+        // Limpiar resultados
+        resultsContent.innerHTML = '';
     }
+
+    // Iniciar la aplicación
+    initApp();
 });
